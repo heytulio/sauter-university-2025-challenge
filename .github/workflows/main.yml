@@ -1,0 +1,33 @@
+name: Workflow de Deploy no GCP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth to GCP
+        uses: google-github-actions/auth@v4
+        with:
+          project: secrets.PROJECT_ID
+          workload_identity_provider: secrets.WORKLOAD_PROVIDER
+          service_account: secrets.SERVICE_ACCOUNT_EMAIL
+
+      - name: Build do Docker
+        run: docker build -t gcr.io/{secrets.PROJECT_ID}/my-app:latest .
+
+      - name: Deployando no Registry
+        run: docker push gcr.io/{secrets.PROJECT_ID}/my-app:latest
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloud-run@v2
+        with:
+          service: API-CLOUD-RUN
+          image: gcr.io/{secrets.PROJECT_ID}/my-app:latest
+          region: secrets.REGION
