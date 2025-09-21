@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ARTIFACT_REPO_ID: repo-api-ons
+      BASEURL_ONS: ${{ secrets.BASEURL_ONS }}
+      GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}
+      PACKAGE_ID: ${{ secrets.PACKAGE_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,3 +44,15 @@ jobs:
           service: api-cloud-run
           image: ${{env.IMAGE_NAME}}
           region: ${{ secrets.REGION }}
+          env_vars: |
+            BASEURL_ONS=${{ secrets.BASEURL_ONS }}
+            GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}
+            PACKAGE_ID=${{ secrets.PACKAGE_ID }}
+
+      - name: Make Cloud Run service public
+        run: |
+          gcloud run services add-iam-policy-binding api-cloud-run \
+            --member="allUsers" \
+            --role="roles/run.invoker" \
+            --region=${{ secrets.REGION }} \
+            --project=${{ secrets.PROJECT_ID }}
