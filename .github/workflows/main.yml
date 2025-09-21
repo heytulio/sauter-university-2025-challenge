@@ -5,29 +5,39 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      ARTIFACT_REPO_ID: repo-api-ons
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Auth to GCP
-        uses: google-github-actions/auth@v4
+        uses: google-github-actions/auth@v2
         with:
-          project: secrets.PROJECT_ID
-          workload_identity_provider: secrets.WORKLOAD_PROVIDER
-          service_account: secrets.SERVICE_ACCOUNT_EMAIL
+          project_id: ${{ secrets.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
 
-      - name: Build do Docker
-        run: docker build -t gcr.io/{secrets.PROJECT_ID}/my-app:latest .
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev
 
-      - name: Deployando no Registry
-        run: docker push gcr.io/{secrets.PROJECT_ID}/my-app:latest
+      - name: Build and Push Docker image
+        run: |
+          IMAGE_NAME="${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/$ARTIFACT_REPO_ID/my-app:latest"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloud-run@v2
+        uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: API-CLOUD-RUN
-          image: gcr.io/{secrets.PROJECT_ID}/my-app:latest
-          region: secrets.REGION
+          service: api-cloud-run
+          image: ${{env.IMAGE_NAME}}
+          region: ${{ secrets.REGION }}
