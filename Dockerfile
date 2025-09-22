@@ -33,4 +33,4 @@ EXPOSE 8080
 
 # --- CORREÇÃO 2: Apontar para o caminho correto do seu app ---
 # Comando para rodar a API (src.main:app em vez de main:app)
-CMD ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8080}"]
+CMD ["sh", "-c", "poetry run uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
