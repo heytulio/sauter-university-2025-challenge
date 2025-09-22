@@ -39,7 +39,7 @@ class BucketService():
                 resources_ons = download_files_ons(resources)
                 today = datetime.now()
                 for file in resources_ons:
-                    folder_name = f"RAW/ONS/PARQUET/{today.year}/{today.month:02}/{today.day:02}/{file['filename']}"
+                    folder_name = f"RAW/ONS/PARQUET/{today.year}/{today.month:02}/{today.day:02}/{file['filename']}.parquet"
                     self.adapter.upload_file(file, target_path=folder_name)
                 ingested_files = True
 
