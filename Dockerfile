@@ -1,13 +1,36 @@
+# Usar imagem oficial do Python
 FROM python:3.11-slim
 
-EXPOSE 8080
+# Variáveis de ambiente
+ENV POETRY_VERSION=1.8.2 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1
 
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y curl build-essential && rm -rf /var/lib/apt/lists/*
+
+# Instalar poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# Adicionar Poetry ao PATH
+ENV PATH="/root/.local/bin:$PATH"
+
+# Criar diretório da aplicação
 WORKDIR /app
 
-COPY requirements.txt .
+# Copiar arquivos de configuração primeiro (para cache de dependências)
+COPY pyproject.toml poetry.lock* /app/
 
-RUN pip install --no-cache-dir -r requirements.txt
+# --- CORREÇÃO 1: Usar a sintaxe moderna do Poetry ---
+# Instalar dependências de produção (apenas do grupo 'main')
+RUN poetry install --only main --no-root
 
-COPY . .
+# Copiar código do projeto
+COPY . /app
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+# Expor porta do FastAPI
+EXPOSE 8000
+
+# --- CORREÇÃO 2: Apontar para o caminho correto do seu app ---
+# Comando para rodar a API (src.main:app em vez de main:app)
+CMD ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

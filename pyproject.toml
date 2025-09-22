@@ -1,0 +1,19 @@
+# pyproject.toml CORRIGIDO
+
+[tool.poetry]
+name = "desafio-sauter-2025"
+version = "0.1.0"
+description = ""
+authors = ["Douglas Paz <douglaspaz955@gmail.com>"]
+readme = "README.md"
+packages = [{include = "src"}] # Boa prática para projetos com pasta src
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+fastapi = ">=0.110.2,<0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.25.0"}
+google-cloud-storage = ">=2.4.0,<4.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
