@@ -9,13 +9,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 class GCSBucketAdapter(IBucketAdapter):
-    """
-        Adapts Google Cloud Storage (GCS) operations to the IBucketAdapter interface.
-
-        This class provides a concrete implementation of the IBucketAdapter,
-        allowing other parts of the application to interact with a GCS bucket
-        in a standardized way without needing to know the specifics of the GCS API.
-    """
     def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
         self.client = storage.Client()

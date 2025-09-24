@@ -1,5 +1,5 @@
+from src.routers import bucket,bq
 from fastapi import FastAPI
-from src.routers import bucket
 import logging
 import dotenv
 import os
@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 app = FastAPI()
 
 app.include_router(bucket.router)
+app.include_router(bq.router)
 
 @app.get("/")
 def root():
