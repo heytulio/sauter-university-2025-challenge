@@ -17,6 +17,7 @@ jobs:
       BASEURL_ONS: ${{ secrets.BASEURL_ONS }}
       GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}
       PACKAGE_ID: ${{ secrets.PACKAGE_ID }}
+      BUCKET_PATH: ${{ secrets.BUCKET_PATH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +49,7 @@ jobs:
             BASEURL_ONS=${{ secrets.BASEURL_ONS }}
             GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}
             PACKAGE_ID=${{ secrets.PACKAGE_ID }}
+            BUCKET_PATH: ${{ secrets.BUCKET_PATH }}
 
       - name: Make Cloud Run service public
         run: |
