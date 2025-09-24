@@ -1,32 +1,18 @@
 from requests.exceptions import RequestException, JSONDecodeError
 from src.core.exceptions.handle_exceptions import ONSApiError
 from src.core.decorators.logging import log_execution
+from src.interfaces.bucket_adapter import IBucketAdapter
+from datetime import date
 from typing import List
+import pandas as pd
 import requests
 import logging
 import io
+import re
 
 logger = logging.getLogger(__name__)
 
-@log_execution
 def download_files_ons(resources: List[dict]) -> List[dict]:
-    """
-        Downloads files from a list of ONS resources.
-
-        Iterates through a list of resource dictionaries, downloads the file content 
-        for each, and stores it in memory. It handles file downloading in chunks 
-        to manage large files efficiently.
-
-        Args:
-            resources (List[dict]): A list of dictionaries, where each dictionary
-                                    contains metadata about a file to be downloaded,
-                                    including its 'url' and 'name'.
-
-        Returns:
-            List[dict]: A list of dictionaries, each containing the downloaded 
-                        file content as a BytesIO object ('file_obj') and its 
-                        original name ('filename').
-    """
     download_files = []
     for resource in resources:
         try:
@@ -43,7 +29,7 @@ def download_files_ons(resources: List[dict]) -> List[dict]:
                 "filename": resource['name'],
                 "file_obj": file_content
             })
-            
+
             logger.info(f"File downloaded: {resource['name']} .")
         except RequestException as e:
             raise ONSApiError(f"Não foi possível baixar o arquivo: {resource['name']}.") from e
@@ -51,37 +37,29 @@ def download_files_ons(resources: List[dict]) -> List[dict]:
     return download_files
 
 @log_execution
-def list_all_resource_parquet(base_url: str, packageId: str) -> List[dict]:
-    """
-        Retrieves a list of all resources with a 'PARQUET' format from a ONS API package.
-
-        This function queries a ONS API endpoint to get a package's metadata. It
-        then filters the resources within that package to find and return only those 
-        in the Parquet file format.
-
-        Args:
-            base_url (str): The base URL of the ONS API.
-            packageId (str): The ID of the ONS package to query.
-
-        Returns:
-            List[dict]: A list of dictionaries, where each dictionary represents 
-                        a Parquet resource and contains its 'id', 'name', and 'url'.
-    """
+def list_all_resource_parquet(
+        base_url: str,
+        packageId: str,
+        start_year: int = 2000,
+        end_year: int = date.today().year
+    ) -> List[dict]:
     resources = []
     try:
         resp = requests.get(f"{base_url}/package_show", params={"id": packageId})
         resp.raise_for_status()
         data = resp.json()
+        
         for resource in data['result']['resources']:
-            if resource['format'].upper() == "PARQUET":
-                resource_id = resource['id']
-                resources_name = resource['name']
-                resources_url = resource['url']
-                resources.append({
-                    "id": resource_id,
-                    "name": resources_name,
-                    "url": resources_url
-                })
+            if str(resource['format']).upper() == "PARQUET":   #TODO adicionar .env  
+                match = re.search(r"(\d{4})", resource["name"])
+                if match:
+                    resource_year = int(match.group(1))
+                    if start_year <= resource_year <= end_year:
+                        resources.append({
+                            "id": resource['id'],
+                            "name": resource['name'],
+                            "url": resource['url'],
+                        })
         return resources
     
     except RequestException as e:
@@ -92,3 +70,25 @@ def list_all_resource_parquet(base_url: str, packageId: str) -> List[dict]:
         
     except KeyError as e:
         raise ONSApiError("Formato de resposta inesperado da API do ONS.") from e
+
+def convert_parquet_columns_string(file_obj: io.BytesIO) -> io.BytesIO:
+    df = pd.read_parquet(file_obj)
+    df = df.astype(str)
+    file_out = io.BytesIO()
+    df.to_parquet(file_out, index=False)
+    file_out.seek(0)
+    return file_out
+
+def build_folder_name(bucket_path: str, filename: str, ingest_date: date = None) -> str:
+    ingest_date = ingest_date or date.today()
+    filename = str(filename).lower()
+    return f"{bucket_path}/dt={ingest_date.year}-{ingest_date.month:02}-{ingest_date.day:02}/{filename}"
+
+def needs_ingestion(folder_name: str, bucket_files: list, start_year: int, end_year: int) -> bool:
+    today_year = date.today().year
+    return folder_name not in bucket_files or (start_year == end_year == today_year)
+
+def ingest_and_upload(adapter: IBucketAdapter, resources: list, folder_name: str):
+    for resource in resources:
+        resource["file_obj"] = convert_parquet_columns_string(resource["file_obj"])
+        adapter.upload_file(resource, folder_name)
