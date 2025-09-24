@@ -1,5 +1,6 @@
 from src.routers import bucket,bq
 from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
 import logging
 import dotenv
 import os
@@ -8,7 +9,7 @@ dotenv.load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-app = FastAPI()
+app = FastAPI(default_response_class=ORJSONResponse)
 
 app.include_router(bucket.router)
 app.include_router(bq.router)
