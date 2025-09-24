@@ -82,7 +82,7 @@ def convert_parquet_columns_string(file_obj: io.BytesIO) -> io.BytesIO:
 def build_folder_name(bucket_path: str, filename: str, ingest_date: date = None) -> str:
     ingest_date = ingest_date or date.today()
     filename = str(filename).lower()
-    return f"{bucket_path}/dt={ingest_date.year}-{ingest_date.month:02}-{ingest_date.day:02}/{filename}"
+    return f"{bucket_path}/dt={ingest_date.year}-{ingest_date.month:02}-{ingest_date.day:02}/{filename}.parquet"
 
 def needs_ingestion(folder_name: str, bucket_files: list, start_year: int, end_year: int) -> bool:
     today_year = date.today().year
