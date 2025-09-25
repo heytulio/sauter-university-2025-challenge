@@ -1,7 +1,6 @@
 from src.interfaces.bq_adapter import ITableRepository
-from typing import List, Dict, Optional 
 from google.cloud import bigquery
-from src.core.exceptions.handle_exceptions import BQAdapterError
+from typing import List, Dict, Optional 
 from datetime import date
 
 class BigQueryTableAdapter(ITableRepository):
@@ -33,6 +32,3 @@ class BigQueryTableAdapter(ITableRepository):
             return [dict(row.items()) for row in results], total_rows
         except Exception as e:
             raise RuntimeError(f"Erro ao consultar BigQuery: {e}")
-        
-        except Exception as e:
-            raise RuntimeError(f"Adapter erro ao consultar BigQuery: {e}")

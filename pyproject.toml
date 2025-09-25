@@ -19,6 +19,7 @@ pyarrow = "^21.0.0"
 orjson = "^3.11.3"
 apscheduler = "^3.11.0"
 
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

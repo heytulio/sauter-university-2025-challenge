@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(default_response_class=ORJSONResponse, lifespan=lifespan)
 
+
 app.include_router(bucket.router)
 app.include_router(bq.router)
 
