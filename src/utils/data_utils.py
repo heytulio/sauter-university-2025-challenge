@@ -2,6 +2,7 @@ from requests.exceptions import RequestException, JSONDecodeError
 from src.core.exceptions.handle_exceptions import ONSApiError
 from src.core.decorators.logging import log_execution
 from src.interfaces.bucket_adapter import IBucketAdapter
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import date
 from typing import List
 import pandas as pd
@@ -92,3 +93,13 @@ def ingest_and_upload(adapter: IBucketAdapter, resources: list, folder_name: str
     for resource in resources:
         resource["file_obj"] = convert_parquet_columns_string(resource["file_obj"])
         adapter.upload_file(resource, folder_name)
+
+def schedule_ingestion(scheduler: BackgroundScheduler, service):
+    today = date.today()
+    scheduler.add_job(
+        service.mount_pipeline,  
+        trigger="cron",
+        hour=0,
+        minute=0,
+        args=[today.year, today.year]
+    )

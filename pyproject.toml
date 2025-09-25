@@ -17,6 +17,7 @@ google-cloud-bigquery = "^3.38.0"
 pandas = "^2.3.2"
 pyarrow = "^21.0.0"
 orjson = "^3.11.3"
+apscheduler = "^3.11.0"
 
 [build-system]
 requires = ["poetry-core"]
