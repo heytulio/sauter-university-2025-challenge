@@ -28,7 +28,7 @@ class BucketService():
             BUCKET_NAME = os.getenv("GCP_BUCKET_NAME")
 
             if not BASE_URL or not PROJECT_ID or not PACKAGE_ID:
-                raise ValueError("Configuração de ambiente incompleta.")
+                raise ValueError("Configuração de ambiente incompleta Base URL, Project ID e Package ID.")
             
             ingested_files = False
             start_time = datetime.now() 

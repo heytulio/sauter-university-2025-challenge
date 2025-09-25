@@ -28,7 +28,7 @@ def get_bq_service() -> BucketService:
     GCP_TABLE_NAME = os.getenv("GCP_TABLE_NAME")
 
     if not PROJECT_ID or not GCP_DATASET_NAME or not GCP_TABLE_NAME:
-        raise ValueError("Configuração de ambiente incompleta.")
+        raise ValueError("Configuração de ambiente incompleta Project ID, Dataset name e Table name.")
     
 
     adapter = BigQueryTableAdapter()
