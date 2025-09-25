@@ -2,6 +2,7 @@ from src.adapters.gcs_bucket_adapter import GCSBucketAdapter
 from src.services.bucket import BucketService
 from src.adapters.bq_bucket_adapter import BigQueryTableAdapter
 from src.services.bigquery import ReservatorioService
+from fastapi import HTTPException
 import os
 import dotenv
 
@@ -27,9 +28,11 @@ def get_bq_service() -> BucketService:
     GCP_DATASET_NAME = os.getenv("GCP_DATASET_NAME")
     GCP_TABLE_NAME = os.getenv("GCP_TABLE_NAME")
 
-    if not PROJECT_ID or not GCP_DATASET_NAME or not GCP_TABLE_NAME:
-        raise ValueError("Configuração de ambiente incompleta Project ID, Dataset name e Table name.")
-    
+    # if not PROJECT_ID or not GCP_DATASET_NAME or not GCP_TABLE_NAME:
+    #     raise HTTPException(
+    #             status_code=400,
+    #             detail="Configuração de ambiente incompleta Base URL, Project ID e Package ID."
+    #         )    
 
     adapter = BigQueryTableAdapter()
     return ReservatorioService(adapter, table="{}.{}.{}".format(PROJECT_ID, GCP_DATASET_NAME, GCP_TABLE_NAME))
