@@ -22,7 +22,6 @@ def get_bucket_service() -> BucketService:
 
 
 def get_bq_service() -> BucketService:
-    dotenv.load_dotenv()
 
     PROJECT_ID = os.getenv("PROJECT_ID")
     GCP_DATASET_NAME = os.getenv("GCP_DATASET_NAME")
