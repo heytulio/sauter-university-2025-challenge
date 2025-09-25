@@ -1,52 +1,125 @@
 # sauter-university-2025-challenge
 
+## ONS Data Ingestion Pipeline
 
-![Architecture](./img/university.drawio.png)
+Este projeto implementa um pipeline de ingestão de dados que busca arquivos no formato Parquet do portal de Dados Abertos do Operador Nacional do Sistema Elétrico (ONS), processa-os e os armazena no Google Cloud Storage (GCS).
 
-Sobre o desafio: 
+A aplicação é construída em Python utilizando o framework FastAPI para expor uma API RESTful, que permite acionar o pipeline de forma programática. A arquitetura é projetada para ser modular e extensível, facilitando a manutenção e a adição de novas funcionalidades.
 
-> Realizar a implementação vista na arquitetura acima;
+---
 
-Cada equipe se divida em grupos de 5 pessoas. Cada equipe precisará desenvolver o esquema apresentado na arquitetura, seguindo as boas práticas de engenharia de dados, de software e do Google Cloud.
-Cada equipe deverá realizar uma demonstração PRÁTICA sobre a sua solução, pontuando explicitamente cada ponto destacado abaixo:
-- Pitch, “Why Google?” (apresentação teórica de no máximo 3~5 minutos)
+## 🛠 Tecnologias Utilizadas
+- **Python 3.11**
+- **FastAPI** — framework para APIs
+- **Google BigQuery**
+- **Google Cloud Storage**
+- **Docker**
+- **Pydantic** — validação de dados
+- **Poetry** — gerenciamento de dependências
+---
 
-- Integração com a ferramenta de CI/CD (github actions);
+---
 
-- Terraform utilizado para levantar a infraestrutura;
+## Exemplo de arquivo .env:
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=/caminho/para/seu/arquivo-de-credenciais.json
+PROJECT_ID=seu-id-de-projeto-gcp
+BASEURL_ONS=https://dados.ons.org.br/api/3/action
+PACKAGE_ID=id-do-pacote-de-dados
+BUCKET_PATH=raw/ons
+GCP_DATASET_NAME=nome-do-seu-dataset-bigquery
+GCP_TABLE_NAME=nome-da-sua-tabela-bigquery
+GCP_BUCKET_NAME=seu-nome-de-bucket-aqui
+```
+---
 
-- Pipeline de transformação dos dados;
-REST API que buscará os dados para uma data específica ou um conjunto de dados históricos;
+## 🏗 Arquitetura
+A API foi construída seguindo o padrão **Adapters**, garantindo:
+- **Desacoplamento** entre módulos.
+- **Flexibilidade** para troca de implementações.
+- **Organização** clara da estrutura de pastas.
+- **Facilidade de manutenção**.
 
-- Modelo preditivo que calcula o volume de água previsto para um reservatório (baseado no modelo de ENA)
+**Diagrama Simplificado**:
+Client → API Endpoints → Services → Adapters → Data Sources (BigQuery, GCS)
 
-> https://dados.ons.org.br/dataset/ear-diario-por-reservatorio
+---
 
-OU apresentar a criação de um agente com o ADK + Gemini, com mecanismo de RAG, que consulta a base de dados HISTÓRICA de ENA e é capaz de responder dúvidas sobre o volume de uma bacia hidrográfica em um determinado período, o agente também deve responder dúvidas sobre a sauter, baseado nos dados do site oficial da sauter http://sauter.digital. 
-- Exibir em uma representação gráfica uma análise sobre os dados tratados.
+## ⚙️ Instalação
+Clone o repositório:
+```bash
+git clone https://github.com/heytulio/sauter-university-2025-challenge.git
+cd sauter-university-2025-challenge
+```
 
-### Critérios avaliados:
+Crie um ambiente virtual linux:
+```bash
+python -m venv env
+source env/bin/activate
+```
 
-Além de todos os entregáveis acima, serão considerados:
-- Boas práticas de Engenharia de Software, como a utilização de padrões de projeto ou a utilização indevida de um padrão de projeto.
-- Boas práticas na construção de REST APIs.
-TODOS os integrantes do grupo precisam realizar commits e especificar as branchs trabalhadas.
-- Criação de budget alerts nos projetos, com custo máximo de 300 reais, e inclusão do email de ao menos 3 mentores como canal de envio, mais a equipe que construiu a solução, obrigatoriamente.
-- Repositório Privado no github.
-Utilização do workload identity federation.
-Containerização da API.
-- Documentação do código e docstrings.
-Justificativa de escolha do tipo de gráfico para exibição dos dados.
-- Utilizar obrigatoriamente a linguagem Python na criação da API.
-- Apresentar os testes de unidade e testes de integração mockados com a api de dados abertos, com cobertura mínima de 85%.
-- Para os grupos que escolherem criar o modelo preditivo, apresentar acurácia mínima de 70%, com testes nos conjuntos de dados, juntamente com a justificativa do modelo e das técnicas utilizadas.
-- Para os grupos que escolherem criar um agente, será necessário apresentar a resposta lúcida do modelo, incluindo o prompt utilizado e a justificativa do modelo, como o testes e a orquestração de agentes;
-- Explicitamente para as equipes que optarem pela criação de um agente, será necessário que o agente seja um “multi-agente”, ou seja, um orquestrador de outros agentes.
-Os agentes obrigatórios serão:
-Agente Orquestrador (root);
-Agente que responde as perguntas sobre a ENA;
-Agente que tira dúvidas sobre a sauter, consultando o site da Sauter (sauter.digital);
+crie um ambiente virtual windows:
+```bash
+python -m venv env
+.\env\Scripts\activate
+```
 
-- modelo spotify 
+Instale o Poetry: Siga este 
+[instalacao_do_poetry_simples](https://python-poetry.org/docs/#installing-with-the-official-installer)
 
-- Geral de dados 
+Instale as dependências:
+```bash
+poetry install
+```
+
+Uso local:
+```bash
+poetry run uvicorn src.main:app --reload
+```
+
+Uso Docker:
+```bash
+docker build -t sauter-api .
+docker run --name sauter-api -p 8081:8000 sauter-api
+```
+
+Acesse o Swagger:
+
+Aqui: http://127.0.0.1:8000/docs
+
+---
+
+Endpoints:
+
+- **GET** `/bq` - Busca dados do BigQuery.
+    - params:
+        - `page`: int
+        - `page_size`: int
+        - `date`: str
+
+- **POST** `/bucket` - Cria a pipeline de processamento dos dados no Google Cloud Storage. 
+    - body:
+        - `start_year`: int
+        - `end_year`: int
+
+---
+*Resposta de Sucesso:*
+
+json
+{
+  "status": "Pipeline executado com sucesso.",
+  "ingested_files": true,
+  "bucket": "seu-nome-de-bucket-aqui",
+  "runtime": "15.234"
+}
+
+
+*Resposta de Falha:*
+
+json
+{
+  "status": "Pipeline falhou.",
+  "error": "Descrição do erro."
+}
+
+---

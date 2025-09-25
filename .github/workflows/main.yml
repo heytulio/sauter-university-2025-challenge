@@ -16,6 +16,8 @@ jobs:
       ARTIFACT_REPO_ID: repo-api-ons
       BASEURL_ONS: ${{ secrets.BASEURL_ONS }}
       GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}
+      GCP_DATASET_NAME: ${{ secrets.GCP_DATASET_NAME }}
+      GCP_TABLE_NAME: ${{ secrets.GCP_TABLE_NAME }}
       PACKAGE_ID: ${{ secrets.PACKAGE_ID }}
       BUCKET_PATH: ${{ secrets.BUCKET_PATH }}
     steps:
@@ -50,7 +52,9 @@ jobs:
             GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}
             PACKAGE_ID=${{ secrets.PACKAGE_ID }}
             BUCKET_PATH: ${{ secrets.BUCKET_PATH }}
-
+            GCP_DATASET_NAME: ${{ secrets.GCP_DATASET_NAME }}
+            GCP_TABLE_NAME: ${{ secrets.GCP_TABLE_NAME }}
+            PROJECT_ID: ${{ secrets.PROJECT_ID }}
       - name: Make Cloud Run service public
         run: |
           gcloud run services add-iam-policy-binding api-cloud-run \

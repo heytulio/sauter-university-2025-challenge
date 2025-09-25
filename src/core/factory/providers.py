@@ -22,6 +22,14 @@ def get_bucket_service() -> BucketService:
 
 def get_bq_service() -> BucketService:
     dotenv.load_dotenv()
+
+    PROJECT_ID = os.getenv("PROJECT_ID")
+    GCP_DATASET_NAME = os.getenv("GCP_DATASET_NAME")
+    GCP_TABLE_NAME = os.getenv("GCP_TABLE_NAME")
+
+    if not PROJECT_ID or not GCP_DATASET_NAME or not GCP_TABLE_NAME:
+        raise ValueError("Configuração de ambiente incompleta.")
     
+
     adapter = BigQueryTableAdapter()
-    return ReservatorioService(adapter, table="sauter-university-desafio.ons_dataset.dados_ons_transformado") #TODO adicionar ao .env
+    return ReservatorioService(adapter, table="{}.{}.{}".format(PROJECT_ID, GCP_DATASET_NAME, GCP_TABLE_NAME))
