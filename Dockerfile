@@ -21,16 +21,14 @@ WORKDIR /app
 # Copiar arquivos de configuração primeiro (para cache de dependências)
 COPY pyproject.toml poetry.lock* /app/
 
-# --- CORREÇÃO 1: Usar a sintaxe moderna do Poetry ---
 # Instalar dependências de produção (apenas do grupo 'main')
 RUN poetry install --only main --no-root
 
 # Copiar código do projeto
 COPY . /app
 
-# Expor porta do FastAPI
+# Expor porta do FastAPI para o Cloud Run
 EXPOSE 8080
 
-# --- CORREÇÃO 2: Apontar para o caminho correto do seu app ---
-# Comando para rodar a API (src.main:app em vez de main:app)
+# Comando para rodar a API 
 CMD ["sh", "-c", "poetry run uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
