@@ -36,7 +36,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          IMAGE_NAME="${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/$ARTIFACT_REPO_ID/my-app:latest"
+          IMAGE_NAME="${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/$ARTIFACT_REPO_ID/my-app:${{ github.sha }}"
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
@@ -45,16 +45,17 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: api-cloud-run
-          image: ${{env.IMAGE_NAME}}
+          image: ${{ env.IMAGE_NAME }}
           region: ${{ secrets.REGION }}
           env_vars: |
             BASEURL_ONS=${{ secrets.BASEURL_ONS }}
             GCP_BUCKET_NAME=${{ secrets.GCP_BUCKET_NAME }}
             PACKAGE_ID=${{ secrets.PACKAGE_ID }}
-            BUCKET_PATH: ${{ secrets.BUCKET_PATH }}
-            GCP_DATASET_NAME: ${{ secrets.GCP_DATASET_NAME }}
-            GCP_TABLE_NAME: ${{ secrets.GCP_TABLE_NAME }}
-            PROJECT_ID: ${{ secrets.PROJECT_ID }}
+            BUCKET_PATH=${{ secrets.BUCKET_PATH }}
+            GCP_DATASET_NAME=${{ secrets.GCP_DATASET_NAME }}
+            GCP_TABLE_NAME=${{ secrets.GCP_TABLE_NAME }}
+            PROJECT_ID=${{ secrets.PROJECT_ID }}
+
       - name: Make Cloud Run service public
         run: |
           gcloud run services add-iam-policy-binding api-cloud-run \

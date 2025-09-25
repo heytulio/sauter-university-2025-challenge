@@ -9,6 +9,7 @@ from src.core.exceptions.handle_exceptions import DataPipelineError
 from src.interfaces.bucket_adapter import IBucketAdapter
 from src.core.decorators.logging import log_execution
 from datetime import datetime,date
+from fastapi.exceptions import HTTPException
 import logging
 import os
 
@@ -28,7 +29,10 @@ class BucketService():
             BUCKET_NAME = os.getenv("GCP_BUCKET_NAME")
 
             if not BASE_URL or not PROJECT_ID or not PACKAGE_ID:
-                raise ValueError("Configuração de ambiente incompleta Base URL, Project ID e Package ID.")
+                raise HTTPException(
+                    status_code=400,
+                    detail="Configuração de ambiente incompleta Base URL, Project ID e Package ID."
+                )
             
             ingested_files = False
             start_time = datetime.now() 
